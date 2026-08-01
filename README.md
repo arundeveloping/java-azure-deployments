@@ -24,7 +24,8 @@ docker compose up -d
 - [Auth Service README](auth-service/README.md)
 - [Free Learning Guide](auth-service/docs/FREE-LEARNING-GUIDE.md)
 - [Phase 3 — Azure Portal (no CLI)](auth-service/docs/PHASE-3-AZURE-PORTAL.md) ← deploy guide
-- [Azure SDLC Master Roadmap](auth-service/docs/AZURE-SDLC-ROADMAP.md) ← **interview prep (12 weeks)**
+- [Azure SDLC Master Roadmap](auth-service/docs/AZURE-SDLC-ROADMAP.md) ← interview prep (12 weeks)
+- [AZ-900 Complete Roadmap](auth-service/docs/AZURE-900-ROADMAP.md) ← certification study guide
 - [Phase 3 — Azure CLI](auth-service/docs/PHASE-3-AZURE.md) (optional)
 - [Azure Deployment (CD automation)](auth-service/docs/AZURE-DEPLOYMENT.md) (Phase 4)
 
