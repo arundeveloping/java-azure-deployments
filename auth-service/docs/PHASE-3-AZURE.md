@@ -186,14 +186,16 @@ This deletes **everything** and stops all charges.
 
 ---
 
-## Optional: One-script deploy
+## Optional: One-script deploy (CLI)
 
-We included an automated script:
+We included an automated script for CLI users:
 
 ```powershell
-cd "D:\workspace\cursor\java-azure deployments\auth-service\scripts"
+cd auth-service/scripts
 .\azure-phase3.ps1 -ResourceGroup "rg-auth-service-dev" -Location "eastus"
 ```
+
+> **Prefer the portal?** See [PHASE-3-AZURE-PORTAL.md](PHASE-3-AZURE-PORTAL.md) — full step-by-step with no CLI.
 
 ---
 
