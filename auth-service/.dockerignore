@@ -1,7 +1,9 @@
-target/
+# Ignore build artifacts except the packaged JAR needed by Dockerfile
+target/**
+!target/*.jar
+
 .git/
 .github/
-.azure/
 .idea/
 *.iml
 *.md
