@@ -19,6 +19,8 @@ Thumbs.db
 .env.*
 *.env
 auth-service/azure/main.parameters.dev.json
+azure-secrets.txt
+auth-service/azure-secrets.txt
 
 # Logs
 *.log
