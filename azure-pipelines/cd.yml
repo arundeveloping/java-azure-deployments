@@ -1,0 +1,93 @@
+# Azure DevOps CD Pipeline - Deploy to Azure Container Apps
+# Requires service connection: Azure Resource Manager (OIDC recommended)
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - auth-service/*
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - group: auth-service-dev   # Variable group: ACR_NAME, ACR_LOGIN_SERVER, RESOURCE_GROUP, CONTAINER_APP_NAME
+  - name: APP_PATH
+    value: 'auth-service'
+  - name: IMAGE_NAME
+    value: 'auth-service'
+  - name: IMAGE_TAG
+    value: '$(Build.BuildId)'
+
+stages:
+  - stage: BuildAndPush
+    displayName: 'Build & Push Image'
+    jobs:
+      - job: BuildPush
+        steps:
+          - task: Maven@4
+            inputs:
+              mavenPomFile: '$(APP_PATH)/pom.xml'
+              goals: 'clean package -DskipTests'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '1.21'
+            displayName: 'Build JAR'
+
+          - task: Docker@2
+            displayName: 'Build and push to ACR'
+            inputs:
+              command: 'buildAndPush'
+              containerRegistry: '$(ACR_SERVICE_CONNECTION)'
+              repository: '$(IMAGE_NAME)'
+              Dockerfile: '$(APP_PATH)/Dockerfile'
+              buildContext: '$(APP_PATH)'
+              tags: |
+                $(IMAGE_TAG)
+                latest
+
+  - stage: Deploy
+    displayName: 'Deploy to Azure'
+    dependsOn: BuildAndPush
+    jobs:
+      - deployment: DeployContainerApp
+        displayName: 'Update Container App'
+        environment: 'auth-service-dev'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - task: AzureCLI@2
+                  displayName: 'Update Container App image'
+                  inputs:
+                    azureSubscription: '$(AZURE_SERVICE_CONNECTION)'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      az containerapp update \
+                        --name "$(CONTAINER_APP_NAME)" \
+                        --resource-group "$(AZURE_RESOURCE_GROUP)" \
+                        --image "$(ACR_LOGIN_SERVER)/$(IMAGE_NAME):$(IMAGE_TAG)"
+
+                - task: AzureCLI@2
+                  displayName: 'Health check'
+                  inputs:
+                    azureSubscription: '$(AZURE_SERVICE_CONNECTION)'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      FQDN=$(az containerapp show \
+                        --name "$(CONTAINER_APP_NAME)" \
+                        --resource-group "$(AZURE_RESOURCE_GROUP)" \
+                        --query "properties.configuration.ingress.fqdn" -o tsv)
+                      echo "App URL: https://$FQDN"
+                      for i in {1..12}; do
+                        STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://$FQDN/actuator/health" || true)
+                        if [ "$STATUS" = "200" ]; then
+                          echo "Health check passed"
+                          exit 0
+                        fi
+                        sleep 15
+                      done
+                      exit 1

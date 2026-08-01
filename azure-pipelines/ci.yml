@@ -1,0 +1,77 @@
+# Azure DevOps CI Pipeline
+# Import this file in Azure DevOps: Pipelines > New Pipeline > Azure Repos Git > Existing YAML
+
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+  paths:
+    include:
+      - auth-service/*
+
+pr:
+  branches:
+    include:
+      - main
+      - develop
+  paths:
+    include:
+      - auth-service/*
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
+  APP_PATH: 'auth-service'
+
+stages:
+  - stage: Build
+    displayName: 'Build & Test'
+    jobs:
+      - job: MavenBuild
+        displayName: 'Maven Build and Test'
+        steps:
+          - task: Cache@2
+            inputs:
+              key: 'maven | "$(Agent.OS)" | $(APP_PATH)/pom.xml'
+              restoreKeys: |
+                maven | "$(Agent.OS)"
+              path: $(MAVEN_CACHE_FOLDER)
+            displayName: 'Cache Maven packages'
+
+          - task: Maven@4
+            inputs:
+              mavenPomFile: '$(APP_PATH)/pom.xml'
+              goals: 'clean test package'
+              options: '-B -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+              publishJUnitResults: true
+              testResultsFiles: '**/surefire-reports/TEST-*.xml'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '1.21'
+            displayName: 'Run tests and build JAR'
+
+          - task: PublishPipelineArtifact@1
+            inputs:
+              targetPath: '$(APP_PATH)/target'
+              artifact: 'auth-service-jar'
+              publishLocation: 'pipeline'
+            displayName: 'Publish JAR artifact'
+
+      - job: DockerBuild
+        displayName: 'Validate Docker build'
+        dependsOn: MavenBuild
+        steps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifact: 'auth-service-jar'
+              path: '$(APP_PATH)/target'
+
+          - task: Docker@2
+            inputs:
+              command: 'build'
+              Dockerfile: '$(APP_PATH)/Dockerfile'
+              buildContext: '$(APP_PATH)'
+              tags: 'auth-service:$(Build.BuildId)'
+            displayName: 'Build Docker image'

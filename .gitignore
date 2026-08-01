@@ -1,0 +1,28 @@
+# Dependencies & build
+**/target/
+**/.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets & local config (never commit)
+.env
+.env.*
+*.env
+auth-service/azure/main.parameters.dev.json
+
+# Logs
+*.log
+
+# Docker volumes (if any local data dirs)
+**/postgres_data/
+**/redis_data/
