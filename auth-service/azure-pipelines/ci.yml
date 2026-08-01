@@ -1,5 +1,7 @@
-# Azure DevOps CI Pipeline
-# Import this file in Azure DevOps: Pipelines > New Pipeline > Azure Repos Git > Existing YAML
+# Azure DevOps CI Pipeline — auth-service only
+# Import: Pipelines > New Pipeline > Existing YAML > auth-service/azure-pipelines/ci.yml
+#
+# If this repo contains ONLY auth-service (no parent folder), change APP_ROOT to '.'
 
 trigger:
   branches:
@@ -24,7 +26,7 @@ pool:
 
 variables:
   MAVEN_CACHE_FOLDER: $(Pipeline.Workspace)/.m2/repository
-  APP_PATH: 'auth-service'
+  APP_ROOT: 'auth-service'
 
 stages:
   - stage: Build
@@ -35,7 +37,7 @@ stages:
         steps:
           - task: Cache@2
             inputs:
-              key: 'maven | "$(Agent.OS)" | $(APP_PATH)/pom.xml'
+              key: 'maven | "$(Agent.OS)" | $(APP_ROOT)/pom.xml'
               restoreKeys: |
                 maven | "$(Agent.OS)"
               path: $(MAVEN_CACHE_FOLDER)
@@ -43,7 +45,7 @@ stages:
 
           - task: Maven@4
             inputs:
-              mavenPomFile: '$(APP_PATH)/pom.xml'
+              mavenPomFile: '$(APP_ROOT)/pom.xml'
               goals: 'clean test package'
               options: '-B -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
               publishJUnitResults: true
@@ -54,7 +56,7 @@ stages:
 
           - task: PublishPipelineArtifact@1
             inputs:
-              targetPath: '$(APP_PATH)/target'
+              targetPath: '$(APP_ROOT)/target'
               artifact: 'auth-service-jar'
               publishLocation: 'pipeline'
             displayName: 'Publish JAR artifact'
@@ -66,12 +68,12 @@ stages:
           - task: DownloadPipelineArtifact@2
             inputs:
               artifact: 'auth-service-jar'
-              path: '$(APP_PATH)/target'
+              path: '$(APP_ROOT)/target'
 
           - task: Docker@2
             inputs:
               command: 'build'
-              Dockerfile: '$(APP_PATH)/Dockerfile'
-              buildContext: '$(APP_PATH)'
+              Dockerfile: '$(APP_ROOT)/Dockerfile'
+              buildContext: '$(APP_ROOT)'
               tags: 'auth-service:$(Build.BuildId)'
             displayName: 'Build Docker image'

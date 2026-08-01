@@ -8,7 +8,7 @@ Learning project: OAuth2 authentication microservice with CI/CD and Azure deploy
 |--------|-------------|
 | [`auth-service/`](auth-service/) | Spring Boot OAuth2 auth microservice |
 | [`.github/workflows/`](.github/workflows/) | GitHub Actions CI/CD |
-| [`azure-pipelines/`](azure-pipelines/) | Azure DevOps pipelines (optional) |
+| [`auth-service/azure-pipelines/`](auth-service/azure-pipelines/) | Azure DevOps pipelines for auth-service (optional) |
 
 ## Quick start (Phase 1 — local)
 

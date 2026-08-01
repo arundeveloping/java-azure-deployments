@@ -1,5 +1,8 @@
-# Azure DevOps CD Pipeline - Deploy to Azure Container Apps
-# Requires service connection: Azure Resource Manager (OIDC recommended)
+# Azure DevOps CD Pipeline — auth-service only
+# Import: Pipelines > New Pipeline > Existing YAML > auth-service/azure-pipelines/cd.yml
+# Requires: Azure Resource Manager service connection + variable group 'auth-service-dev'
+#
+# If this repo contains ONLY auth-service (no parent folder), change APP_ROOT to '.'
 
 trigger:
   branches:
@@ -13,8 +16,8 @@ pool:
   vmImage: 'ubuntu-latest'
 
 variables:
-  - group: auth-service-dev   # Variable group: ACR_NAME, ACR_LOGIN_SERVER, RESOURCE_GROUP, CONTAINER_APP_NAME
-  - name: APP_PATH
+  - group: auth-service-dev
+  - name: APP_ROOT
     value: 'auth-service'
   - name: IMAGE_NAME
     value: 'auth-service'
@@ -29,7 +32,7 @@ stages:
         steps:
           - task: Maven@4
             inputs:
-              mavenPomFile: '$(APP_PATH)/pom.xml'
+              mavenPomFile: '$(APP_ROOT)/pom.xml'
               goals: 'clean package -DskipTests'
               javaHomeOption: 'JDKVersion'
               jdkVersionOption: '1.21'
@@ -41,8 +44,8 @@ stages:
               command: 'buildAndPush'
               containerRegistry: '$(ACR_SERVICE_CONNECTION)'
               repository: '$(IMAGE_NAME)'
-              Dockerfile: '$(APP_PATH)/Dockerfile'
-              buildContext: '$(APP_PATH)'
+              Dockerfile: '$(APP_ROOT)/Dockerfile'
+              buildContext: '$(APP_ROOT)'
               tags: |
                 $(IMAGE_TAG)
                 latest

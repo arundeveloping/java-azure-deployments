@@ -172,8 +172,8 @@ Go to **Settings → Secrets and variables → Actions**
 ## Step 3: Azure DevOps setup
 
 1. **Project → Pipelines → New pipeline**
-2. Import `azure-pipelines/ci.yml` for CI
-3. Import `azure-pipelines/cd.yml` for CD
+2. Import `auth-service/azure-pipelines/ci.yml` for CI
+3. Import `auth-service/azure-pipelines/cd.yml` for CD
 
 ### Required setup
 
@@ -260,7 +260,7 @@ Use `az group delete --name rg-auth-service-dev` to tear down when not needed.
   cd-azure.yml            # Deploy app on main
   cd-infrastructure.yml   # Provision Azure (manual)
 
-azure-pipelines/
+auth-service/azure-pipelines/
   ci.yml                  # Azure DevOps CI
   cd.yml                  # Azure DevOps CD
 
