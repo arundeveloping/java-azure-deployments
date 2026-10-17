@@ -7,6 +7,7 @@ Learning project: OAuth2 authentication microservice with CI/CD and Azure deploy
 | Folder | Description |
 |--------|-------------|
 | [`auth-service/`](auth-service/) | Spring Boot OAuth2 auth microservice |
+| [`auth-frontend/`](auth-frontend/) | Vue 3 web UI (deploy: [Azure Static Web Apps](auth-frontend/docs/AZURE-STATIC-WEB-APPS.md)) |
 | [`.github/workflows/`](.github/workflows/) | GitHub Actions CI/CD |
 | [`auth-service/azure-pipelines/`](auth-service/azure-pipelines/) | Azure DevOps pipelines for auth-service (optional) |
 

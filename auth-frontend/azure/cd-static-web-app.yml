@@ -1,0 +1,52 @@
+name: CD - Auth Frontend (Azure Static Web Apps)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'auth-frontend/**'
+      - '.github/workflows/cd-static-web-app.yml'
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches: [main]
+    paths:
+      - 'auth-frontend/**'
+      - '.github/workflows/cd-static-web-app.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  build_and_deploy:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    runs-on: ubuntu-latest
+    name: Build and deploy
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and deploy to Azure Static Web Apps
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: upload
+          app_location: auth-frontend
+          output_location: dist
+          app_build_command: npm ci && npm run build
+        env:
+          # Set in GitHub repo Settings → Secrets and variables → Actions → Variables
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+
+  close_pull_request:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close pull request environment
+    steps:
+      - name: Close Static Web Apps PR preview
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: close
